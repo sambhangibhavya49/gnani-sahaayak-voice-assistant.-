@@ -1,0 +1,132 @@
+[
+  {
+    "id": "PROD-001",
+    "name": "Basmati Rice",
+    "category": "Grains & Cereals",
+    "price_per_unit": 60.0,
+    "unit": "kg",
+    "available_quantity": 50.0,
+    "aliases": [
+      "rice", "basmati", "basmati rice", "chawal packet",
+      "chawal", "चावल", "बासमती", "बासमती चावल",
+      "biyyam", "beeyam", "basmati biyyam", "బియ్యం", "బాస్మతి బియ్యం"
+    ]
+  },
+  {
+    "id": "PROD-002",
+    "name": "Sunflower Cooking Oil",
+    "category": "Edible Oils",
+    "price_per_unit": 140.0,
+    "unit": "litre",
+    "available_quantity": 30.0,
+    "aliases": [
+      "oil", "cooking oil", "sunflower oil", "refined oil",
+      "tel", "तेल", "कुकिंग तेल", "रिफाइंड तेल",
+      "noone", "vanta noone", "sunflower noone", "నూనె", "వంట నూనె", "సన్‌ఫ్లవర్ నూనె"
+    ]
+  },
+  {
+    "id": "PROD-003",
+    "name": "Refined Sugar",
+    "category": "Sweeteners",
+    "price_per_unit": 42.0,
+    "unit": "kg",
+    "available_quantity": 40.0,
+    "aliases": [
+      "sugar", "refined sugar",
+      "cheeni", "shakkar", "chini", "चीनी", "शक्कर",
+      "panchadara", "chakkera", "పంచదార", "చక్కెర"
+    ]
+  },
+  {
+    "id": "PROD-004",
+    "name": "Whole Wheat Atta",
+    "category": "Flours",
+    "price_per_unit": 40.0,
+    "unit": "kg",
+    "available_quantity": 35.0,
+    "aliases": [
+      "atta", "wheat flour", "flour", "gehu ka atta", "aata",
+      "आटा", "गेहूं का आटा",
+      "godhuma pindi", "గోధుమ పిండి", "ఆటా"
+    ]
+  },
+  {
+    "id": "PROD-005",
+    "name": "Toor Dal",
+    "category": "Pulses & Lentils",
+    "price_per_unit": 150.0,
+    "unit": "kg",
+    "available_quantity": 20.0,
+    "aliases": [
+      "dal", "toor dal", "arhar dal", "tuvar dal", "daal", "lentils",
+      "दाल", "तूर दाल", "अरहर दाल",
+      "pappu", "kandi pappu", "పప్పు", "కందిపప్పు"
+    ]
+  },
+  {
+    "id": "PROD-006",
+    "name": "Fresh Cow Milk",
+    "category": "Dairy",
+    "price_per_unit": 60.0,
+    "unit": "litre",
+    "available_quantity": 25.0,
+    "aliases": [
+      "milk", "cow milk", "fresh milk",
+      "doodh", "dudh", "दूध", "गाय का दूध",
+      "paalu", "palu", "aavu paalu", "పాలు", "ఆవు పాలు"
+    ]
+  },
+  {
+    "id": "PROD-007",
+    "name": "Parle-G Biscuits",
+    "category": "Snacks & Bakery",
+    "price_per_unit": 10.0,
+    "unit": "packet",
+    "available_quantity": 50.0,
+    "aliases": [
+      "biscuit", "biscuits", "parle g", "parle-g", "glucose biscuit",
+      "बिस्कुट", "पारले जी", "पारले-जी",
+      "biscuitlu", "బిస్కెట్లు", "పార్లే-జి"
+    ]
+  },
+  {
+    "id": "PROD-008",
+    "name": "Premium Tea Leaves",
+    "category": "Beverages",
+    "price_per_unit": 280.0,
+    "unit": "kg",
+    "available_quantity": 15.0,
+    "aliases": [
+      "tea", "tea powder", "tea leaves",
+      "chai", "chai patti", "चाय", "चाय पत्ती",
+      "tea podi", "chai podi", "టీ పొడి", "చాయ్ పొడి"
+    ]
+  },
+  {
+    "id": "PROD-009",
+    "name": "Iodized Salt",
+    "category": "Spices & Seasoning",
+    "price_per_unit": 22.0,
+    "unit": "kg",
+    "available_quantity": 45.0,
+    "aliases": [
+      "salt", "tata salt",
+      "namak", "नमक", "टाटा नमक",
+      "uppu", "tata uppu", "ఉప్పు", "టాటా ఉప్పు"
+    ]
+  },
+  {
+    "id": "PROD-010",
+    "name": "Turmeric Powder",
+    "category": "Spices & Seasoning",
+    "price_per_unit": 180.0,
+    "unit": "kg",
+    "available_quantity": 10.0,
+    "aliases": [
+      "turmeric", "haldi powder",
+      "haldi", "हल्दी", "हल्दी पाउडर",
+      "pasupu", "pasupu podi", "పసుపు", "పసుపు పొడి"
+    ]
+  }
+]
