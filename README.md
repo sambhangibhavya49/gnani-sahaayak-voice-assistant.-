@@ -92,9 +92,12 @@
 gnani sahayak/
 ├── .env.example              # Environment configuration template (secrets excluded)
 ├── .gitignore                # Excludes .env, caches, virtualenvs, audio files
+├── LICENSE                   # Standard MIT License (Sarvan Karanam, 2026)
 ├── requirements.txt          # Python runtime dependencies
 ├── pytest.ini                # Pytest configuration
 ├── README.md                 # Project documentation
+├── Solution_Pitch.pdf        # Official 1-Page Solution Pitch for Evaluators
+├── Solution_Pitch.md         # Markdown version of 1-Page Solution Pitch
 ├── app.py                    # Streamlit VOXORA web application
 │
 ├── data/
