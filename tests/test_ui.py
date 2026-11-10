@@ -417,6 +417,50 @@ class TestVoxoraUIIntegration(unittest.TestCase):
             self.assertEqual(len(self.assistant.current_order.items), 1)
             self.assertEqual(self.assistant.current_order.total_amount, 120.0)
 
+    def test_prisma_stt_504_gateway_timeout_preserves_cart_and_allows_retry(self):
+        """Tests that a Prisma STT 504 Gateway Timeout preserves the existing cart and allows one-click retry."""
+        # 1. Establish initial cart
+        first_turn = self.assistant.process_text("1 kg sugar")
+        self.assertTrue(first_turn.success)
+        self.assertIsNotNone(self.assistant.current_order)
+        self.assertEqual(len(self.assistant.current_order.items), 1)
+        self.assertEqual(self.assistant.current_order.total_amount, 42.0)
+
+        # 2. Simulate 504 Gateway Timeout during voice turn
+        timeout_err = PrismaAPIError(
+            "Prisma STT gateway timeout (HTTP 504): The speech recognition service timed out while processing audio. Detail: 504 Gateway Time-out",
+            status_code=504,
+        )
+        dummy_wav = create_dummy_wav(duration_seconds=1.0)
+        with patch.object(self.assistant.prisma_client, "transcribe", side_effect=timeout_err):
+            failed_turn = self.assistant.process_audio(dummy_wav, filename="customer_speech.wav")
+
+            # Turn reports failure cleanly
+            self.assertFalse(failed_turn.success)
+            self.assertIn("504", str(failed_turn.error))
+
+            # The existing grocery cart is preserved intact!
+            self.assertIsNotNone(self.assistant.current_order)
+            self.assertEqual(len(self.assistant.current_order.items), 1)
+            self.assertEqual(self.assistant.current_order.total_amount, 42.0)
+            self.assertIsNotNone(failed_turn.order)
+            self.assertEqual(len(failed_turn.order.items), 1)
+
+        # 3. Simulate manual retry with preserved audio bytes once gateway recovers
+        recovered_response = {
+            "success": True,
+            "request_id": "req_recovery_504",
+            "timestamp": "20261109_200000.000",
+            "transcript": "2 kg rice",
+        }
+        with patch.object(self.assistant.prisma_client, "transcribe", return_value=recovered_response):
+            retry_turn = self.assistant.process_audio(dummy_wav, filename="customer_speech.wav")
+            self.assertTrue(retry_turn.success)
+            self.assertEqual(retry_turn.transcript, "2 kg rice")
+            self.assertIsNotNone(self.assistant.current_order)
+            self.assertEqual(len(self.assistant.current_order.items), 1)
+            self.assertEqual(self.assistant.current_order.total_amount, 120.0)
+
     def test_concurrent_stt_requests_blocked_by_request_lock(self):
         """Tests that Prisma STT request lock blocks overlapping requests and allows retry once released."""
         acquired = self.assistant.prisma_client._request_lock.acquire(blocking=False)

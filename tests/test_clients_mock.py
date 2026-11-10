@@ -157,7 +157,7 @@ class TestPrismaClient(unittest.TestCase):
 
     @patch("requests.post")
     def test_transcribe_429_rate_limit(self, mock_post):
-        """Verifies HTTP 429 Rate Limited raises PrismaRateLimitError with clear status and message."""
+        """Verifies HTTP 429 Rate Limited raises PrismaRateLimitError with clear status and message without retrying."""
         fake_response = MagicMock()
         fake_response.status_code = 429
         fake_response.text = '{"error": "RATE_LIMITED", "message": "Only one active STT request allowed at a time."}'
@@ -170,6 +170,90 @@ class TestPrismaClient(unittest.TestCase):
         self.assertIn("429", str(ctx.exception))
         self.assertIn("rate limited", str(ctx.exception).lower())
         self.assertNotIn("gnani-sahaayak-dev-test-key", str(ctx.exception))
+        # Non-retriable: must NOT make redundant attempts
+        mock_post.assert_called_once()
+
+    @patch("requests.post")
+    def test_transcribe_504_gateway_timeout_sanitizes_html_and_retries_once(self, mock_post):
+        """Verifies HTTP 504 Gateway Timeout strips raw HTML, attempts one retry, and raises clean error."""
+        fake_response = MagicMock()
+        fake_response.status_code = 504
+        fake_response.text = "<html><head><title>504 Gateway Time-out</title></head><body><center><h1>504 Gateway Time-out</h1></center><hr><center>nginx</center></body></html>"
+        mock_post.return_value = fake_response
+
+        # Use 0s backoff for instant test execution
+        client = PrismaClient(config=self.config, max_retries=1, retry_backoff=0.0)
+        with self.assertRaises(PrismaAPIError) as ctx:
+            client.transcribe(audio_source=b"RIFFdummydata")
+
+        self.assertEqual(ctx.exception.status_code, 504)
+        err_msg = str(ctx.exception)
+        self.assertIn("504", err_msg)
+        self.assertIn("gateway timeout", err_msg.lower())
+        # Confirms raw HTML tags are completely sanitized
+        self.assertNotIn("<html>", err_msg.lower())
+        self.assertNotIn("<body>", err_msg.lower())
+        self.assertNotIn("<h1>", err_msg.lower())
+        # Initial attempt + 1 retry = 2 calls
+        self.assertEqual(mock_post.call_count, 2)
+
+    @patch("requests.post")
+    def test_transcribe_502_503_bad_gateway_sanitizes_html(self, mock_post):
+        """Verifies HTTP 502/503 strips HTML error pages and raises clean PrismaAPIError."""
+        fake_response = MagicMock()
+        fake_response.status_code = 502
+        fake_response.text = "<html><head><title>502 Bad Gateway</title></head><body><h1>Bad Gateway</h1></body></html>"
+        mock_post.return_value = fake_response
+
+        client = PrismaClient(config=self.config, max_retries=0)
+        with self.assertRaises(PrismaAPIError) as ctx:
+            client.transcribe(audio_source=b"RIFFdummydata")
+
+        self.assertEqual(ctx.exception.status_code, 502)
+        err_msg = str(ctx.exception)
+        self.assertIn("bad gateway", err_msg.lower())
+        self.assertNotIn("<html>", err_msg.lower())
+        mock_post.assert_called_once()
+
+    @patch("requests.post")
+    def test_transcribe_automatic_retry_succeeds_on_second_attempt(self, mock_post):
+        """Verifies that an initial 504 Gateway Timeout automatically recovers when second attempt succeeds."""
+        resp_fail = MagicMock()
+        resp_fail.status_code = 504
+        resp_fail.text = "<html><head><title>504 Gateway Time-out</title></head></html>"
+
+        resp_ok = MagicMock()
+        resp_ok.status_code = 200
+        resp_ok.json.return_value = {
+            "success": True,
+            "request_id": "req_retry_recovered",
+            "timestamp": "20261109_120000",
+            "transcript": "two kilos of rice",
+        }
+
+        mock_post.side_effect = [resp_fail, resp_ok]
+
+        client = PrismaClient(config=self.config, max_retries=1, retry_backoff=0.0)
+        result = client.transcribe(audio_source=b"RIFFdummydata")
+
+        self.assertEqual(mock_post.call_count, 2)
+        self.assertTrue(result["success"])
+        self.assertEqual(result["transcript"], "two kilos of rice")
+
+    @patch("requests.post")
+    def test_transcribe_non_retriable_400_does_not_retry(self, mock_post):
+        """Verifies that 400 Bad Request client errors fail immediately on the first attempt."""
+        fake_response = MagicMock()
+        fake_response.status_code = 400
+        fake_response.text = '{"error": "BAD_REQUEST", "message": "Invalid audio encoding"}'
+        mock_post.return_value = fake_response
+
+        client = PrismaClient(config=self.config, max_retries=1, retry_backoff=0.0)
+        with self.assertRaises(PrismaAPIError) as ctx:
+            client.transcribe(audio_source=b"RIFFdummydata")
+
+        self.assertEqual(ctx.exception.status_code, 400)
+        mock_post.assert_called_once()
 
     def test_transcribe_concurrency_lock_blocks_overlapping_request(self):
         """Verifies that the internal request lock prevents overlapping concurrent STT requests."""

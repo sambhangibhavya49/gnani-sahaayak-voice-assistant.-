@@ -973,6 +973,11 @@ def render_interaction_screen():
                         "⚠️ Prisma STT Rate Limited (HTTP 429): Only one active speech recognition request is permitted at a time. "
                         "Your recorded voice audio and current grocery cart are safely preserved. Click below to retry once the current request completes."
                     )
+                elif any(code in err_text for code in ["504", "502", "503"]) or "gateway" in err_text.lower() or "timeout" in err_text.lower():
+                    st.warning(
+                        "⚠️ Speech Recognition Gateway Latency / Timeout (HTTP 504): The speech recognition service experienced temporary latency. "
+                        "Your recorded voice audio and current grocery cart are safely preserved. Click 'Retry Speech Recognition' below to re-submit without recording again."
+                    )
                 else:
                     st.error(f"⚠️ Speech-to-Text / Audio Error: {turn.error or 'Speech recognition failed. Please try again.'}")
 
